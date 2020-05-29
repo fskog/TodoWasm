@@ -1,0 +1,68 @@
+﻿@page "/settings"
+@using Blazored.LocalStorage
+@inject ILocalStorageService LocalStorage
+@inject AppState AppState
+    <div class="pt-4 px-lg-4">
+        <h3 class="pl-sm-4 mb-5">Settings</h3>
+
+        <hr>
+
+        <div class="alert alert-light" role="alert">
+            <h4 class="alert-heading">Load Todo list</h4>
+            <p>Manually force loading of Todo list from local storage. </p>
+            <div class="w-100 "><button @onclick="() => Load()" class="ml-auto mr-0 btn btn-primary"><span class="oi oi-reload small mr-1"></span>Load</button></div>
+            @if (wasForceLoaded)
+        {
+            <p class="mb-0 text-success"><span class="oi oi-circle-check mr-1"></span>Todo list was loaded!</p>
+        }
+        </div>
+        <hr>
+
+        <div class="alert alert-light" role="alert">
+            <h4 class="alert-heading">Create example Todos</h4>
+            <p>Add a few example Todos to be able to test app!</p>
+            <div class="alert alert-warning">Warning: This will replace existing Todos with example Todos.</div>
+            <div class="w-100 "><button @onclick="() => AddExampleTodos()" class="ml-auto mr-0 btn btn-primary"><span class="oi oi-plus small mr-1"></span>Add example todos</button></div>
+            @if (exampleTodosAdded)
+        {
+            <p class="mb-0 text-success"><span class="oi oi-circle-check mr-1"></span>Example Todos was created.</p>
+        }
+        </div>
+        <hr>
+
+    </div>
+@code {
+
+    bool wasForceLoaded = false;
+    bool exampleTodosAdded = false;
+
+    private async void Load()
+    {
+        AppState.TodoList = await LocalStorage.GetItemAsync<List<TodoItemModel>>("TodoList");
+        AppState.TodoListInitialized = true;
+        wasForceLoaded = true;
+        StateHasChanged();
+
+    }
+
+    private async void AddExampleTodos()
+    {
+
+        var ExampleTodoList = new List<TodoItemModel>()
+    {
+                new TodoItemModel() {Title = "Call John C", Description = "John wants to chat a bit. Nr 070 9324283."},
+                new TodoItemModel() {Title = "Prepare food", Description = "Prepare food before making dinner."},
+                new TodoItemModel() {Title = "Cook dinner", Description = "Make dinner for 2."},
+                new TodoItemModel() {Title = "Eat dinner", Description = "Make sure to drink the new wine."},
+                new TodoItemModel() {Title = "Clean plates and wash up", Description = "Listen to some music while you clean!"},
+                new TodoItemModel() {Title = "Watch TV", Description = "Watch some TV shows before bed."},
+            };
+
+        await LocalStorage.SetItemAsync<List<TodoItemModel>>("TodoList", ExampleTodoList);
+        AppState.TodoListInitialized = false;
+        exampleTodosAdded = true;
+        StateHasChanged();
+
+    }
+
+}

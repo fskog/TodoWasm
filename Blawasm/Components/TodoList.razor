@@ -1,0 +1,82 @@
+﻿@using Blazored.LocalStorage
+@inject AppState AppState;
+@inject ILocalStorageService LocalStorage
+
+
+<div class="bg-white text-black-50 d-flex flex-column" >
+    <div class="d-flex px-4 py-3 text-black-50 bg-darken-5 ">
+        <h5 class="mb-0"><span class="oi oi-list-rich small mr-2"></span>Todos</h5>
+    </div>
+    @if (Todos != null)
+    {
+        <div class="list-group mt-0 mb-0">
+            <hr class="m-0 bg-darken-10"/>
+
+            @if (Todos.Any())
+            {
+                foreach (TodoItemModel item in Todos)
+                {
+                    <TodoItem Todo="item" TodoDeleted="TodoWasDeleted" @key="@item.SystemId"/>
+                }
+            }
+            else
+            {
+                <div class="px-3 py-2"><span class="oi oi-check text-success mr-1"></span>You're all set!</div>
+            }
+            <hr class="m-0 bg-darken-10"/>
+
+        </div>
+        @if (!Todos.Any(x => !x.Completed))
+        {
+<div class="p-3"><h5 class="text-black-50"><span class="oi oi-circle-check text-success mr-1"></span>You're all set! Good job!<span class="oi oi-star text-warning ml-1"></span></h5></div>
+        }
+    }
+    @*<div class="w-100 "><button @onclick="() => Load()" class="ml-auto mr-0 btn btn-link"><h5><span class="oi oi-reload text-primary"></span></h5></button></div>*@
+
+    <div class="flex ">
+        <CreateTodoItem TodoCreated="TodoWasCreated"></CreateTodoItem>
+    </div>
+
+</div>
+
+@code {
+
+    public List<TodoItemModel> Todos => AppState.TodoList;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!AppState.TodoListInitialized)
+        {
+            Load();
+        }
+    }
+
+    private async void Load()
+    {
+        AppState.TodoList = await LocalStorage.GetItemAsync<List<TodoItemModel>>("TodoList");
+        AppState.TodoListInitialized = true;
+        StateHasChanged();
+
+    }
+
+    private async Task TodoWasDeleted(TodoItemModel todo)
+    {
+        Todos.Remove(todo);
+        await LocalStorage.SetItemAsync("TodoList", AppState.TodoList);
+
+    }
+
+    private async Task TodoWasChanged(TodoItemModel todo)
+    {
+        
+    }
+
+    private async Task TodoWasCreated(TodoItemModel todo)
+    {
+
+        Todos.Add(todo);
+        Console.WriteLine("Todo was created");
+        await LocalStorage.SetItemAsync("TodoList", AppState.TodoList);
+
+    }
+}

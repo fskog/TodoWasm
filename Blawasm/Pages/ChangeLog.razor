@@ -1,0 +1,25 @@
+﻿@page "/changes"
+@inject AppState AppState
+
+<div class="">
+<h3 class="ml-3 mt-3">Change log</h3>
+<p class="ml-3">Changes and improvements to the app.</p>
+
+<ul class="list-group list-group-flush mt-5">
+    @foreach (var change in Changes.OrderByDescending(x => x.Item2))
+    {
+        <li class="list-group-item">
+            <div class="d-flex w-100 justify-content-between">
+                <div class="mb-1"><span class="oi oi-circle-check mr-2 text-success"></span>@change.Item1</div>
+                <small>@change.Item2.ToString("M")</small>
+            </div>
+        </li>
+    }
+
+</ul>
+</div>
+
+@code {
+    List<Tuple<string, DateTime>> Changes => AppState.ChangeLog;
+
+}

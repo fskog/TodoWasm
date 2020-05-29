@@ -1,0 +1,153 @@
+﻿@using Blawasm.Models
+@using Blazored.LocalStorage
+@inject AppState AppState
+@inject ILocalStorageService LocalStorage
+
+@if (Todo != null)
+{
+    <div class="@(Todo.Completed ? "border-success" : "border-primary")" style="border: 0; border-left: 5px; border-style:solid">
+        <EditForm form="@editFormId" Model="@EditTodoItem" OnValidSubmit="SaveEdit" class="">
+
+            <div @onclick="() => ToggleExpanded()" class="list-group-item list-group-item-action flex-column align-items-start rounded-0 d-flex @(Todo.Completed ? "bg-tint-green-3 text-black-50" : "")">
+
+                <DataAnnotationsValidator />
+                <div class="d-flex w-100 justify-content-between">
+
+
+                    @if (isEditMode)
+                    {
+                        <div class="form-group">
+
+                            <InputText id="title" @bind-Value="EditTodoItem.Title" class="form-control mb-0" placeholder="Title" />
+                        </div>
+                    }
+                    else
+                    {
+                        <h5 class="mb-1">@Todo.Title</h5>
+
+                    }
+                    @if (Todo.Completed)
+                    {
+                        <small><span class="oi oi-check text-success"></span>Completed on @Todo.CompletedTime.ToLocalTime().ToString(dateString)</small>
+                    }
+                    else
+                    {
+                        <small>@Todo.Created.ToLocalTime().ToString(dateString)</small>
+                    }
+                </div>
+                @if (isExpanded || isEditMode)
+                {
+                    if (isEditMode)
+                    {
+                        <div class="form-group">
+
+                            <InputTextArea id="description" @bind-Value="EditTodoItem.Description" class="mt-1 form-control" placeholder="Description" />
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="">@Todo.Description</p>
+
+                    }
+                    <div class="d-flex w-100 justify-content-end">
+                        @if (isEditMode)
+                        {
+                            <button type="submit" class="btn btn-success">Save</button>
+                            <button @onclick="() => CancelEdit()" type="button" class="btn btn-outline-danger ml-1 mr-auto">Discard</button>
+
+                        }
+                        else
+                        {
+                            @if (Todo.Completed)
+                            {
+                                <small class="flex-fill align-self-end">Created @Todo.Created.ToLocalTime().ToString(dateString)</small>
+
+                                <button @onclick="() => SetUncomplete()" class="btn btn-outline-danger small mt-2 ml-1 ">Revert</button>
+                            }
+                            else
+                            {
+                                <button @onclick="() => SetComplete()" class="btn btn-success small mt-2 mr-auto ml-0"><span class="oi oi-check text-white mr-1"></span>Mark complete</button>
+                            }
+                            <button @onclick="() => DeleteTodo()" class="btn btn-danger small mt-2 ml-1"><span class="oi oi-trash text-white mr-1"></span></button>
+                            <button @onclick="() => EditTodo()" class="btn btn-warning small mt-2 ml-1"><span class="oi oi-pencil text-white"></span></button>
+                        }
+                    </div>
+                    <ValidationSummary />
+
+                }
+
+            </div>
+
+        </EditForm>
+
+
+    </div>
+}
+
+@code {
+    [Parameter] public TodoItemModel Todo { get; set; } = new TodoItemModel();
+    [Parameter] public EventCallback<TodoItemModel> TodoDeleted { get; set; }
+    [Parameter] public EventCallback<TodoItemModel> TodoChanged { get; set; }
+
+    private TodoItemModel EditTodoItem = new TodoItemModel();
+
+    private string editFormId = "editFormId";
+    private string dateString = "ddd, dd MMM H:mm";
+
+    private bool isEditMode = false;
+    private bool isExpanded = false;
+
+    void ToggleExpanded()
+    {
+        isExpanded = !isExpanded;
+    }
+
+    async void SetComplete()
+    {
+        Todo.Completed = true;
+        Todo.CompletedTime = DateTime.Now;
+        isExpanded = false;
+
+        await LocalStorage.SetItemAsync("TodoList", AppState.TodoList);
+    }
+    async void SetUncomplete()
+    {
+        Todo.Completed = false;
+        await LocalStorage.SetItemAsync("TodoList", AppState.TodoList);
+    }
+
+    void EditTodo()
+    {
+        EditTodoItem.Title = Todo.Title;
+        EditTodoItem.Description = Todo.Description;
+        isEditMode = true;
+    }
+
+    async void CancelEdit()
+    {
+        isEditMode = false;
+    }
+
+    async void SaveEdit()
+    {
+
+        Todo.Title = EditTodoItem.Title;
+        Todo.Description = EditTodoItem.Description;
+        await LocalStorage.SetItemAsync("TodoList", AppState.TodoList);
+        isEditMode = false;
+        StateHasChanged();
+
+
+    }
+
+    void DeleteTodo()
+    {
+        TodoDeleted.InvokeAsync(Todo);
+    }
+
+    void Nop()
+    {
+
+    }
+
+}

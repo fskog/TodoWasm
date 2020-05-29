@@ -1,0 +1,38 @@
+﻿@using Blawasm.Models
+
+<EditForm Model="@todoItem" OnValidSubmit="HandleValidSubmit" class="mt-5 p-3 bg-light rounded">
+    <h3><span class="oi oi-plus text-primary small mr-1"></span>Todo</h3>
+
+    <DataAnnotationsValidator />
+
+
+
+
+    <div class="form-group">
+        <InputText id="title" @bind-Value="todoItem.Title" class="form-control mb-0" placeholder="Title" />
+        <InputTextArea id="description" @bind-Value="todoItem.Description" class="mt-1 form-control" placeholder="Description" />
+
+    </div>
+    
+    <ValidationSummary />
+
+
+    <button type="submit" class="btn btn-primary col-12 col-lg-auto">Create</button>
+
+
+
+
+</EditForm>
+
+@code {
+    [Parameter] public EventCallback<TodoItemModel> TodoCreated { get; set; }
+
+    TodoItemModel todoItem = new TodoItemModel();
+
+    void HandleValidSubmit()
+    {
+        todoItem.Created = DateTime.Now;
+        TodoCreated.InvokeAsync(todoItem);
+        todoItem = new TodoItemModel();
+    }
+}
