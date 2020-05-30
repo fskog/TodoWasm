@@ -24,6 +24,22 @@ app {
     flex-direction: column;
 }
 
+.app-loading {
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    
+    font-size: 30px;
+    text-align: center;
+    color: white;
+}
+
+.app-loading > * 
+{
+    margin: auto;
+}
+
 .top-row {
     height: 3.5rem;
     display: flex;
